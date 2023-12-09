@@ -73,8 +73,8 @@ jobs:
 
           echo "BUILDROOT_VERSION=${{ inputs.branches-tags }}" >> $GITHUB_ENV          
 
-          KERNEL_VERSION="$(grep BR2_LINUX_KERNEL_VERSION ${{github.event.inputs.board}}_defconfig | cut -d'=' -f2 | tr -d '"')"
-          echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
+          #KERNEL_VERSION="$(grep BR2_LINUX_KERNEL_VERSION ${{github.event.inputs.board}}_defconfig | cut -d'=' -f2 | tr -d '"')"
+          #echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
 
       - name: copy firmware
         run: |      
@@ -100,4 +100,4 @@ jobs:
             /opt/buildroot/output/images/rootfs.cpio.xz
           body: |
             Buildroot Version: ${{ env.BUILDROOT_VERSION }}
-            Kernel Version: ${{ env.KERNEL_VERSION }}
+            #Kernel Version: ${{ env.KERNEL_VERSION }}
