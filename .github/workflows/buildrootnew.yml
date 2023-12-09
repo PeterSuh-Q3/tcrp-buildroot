@@ -14,10 +14,6 @@ on:
         description: "version"
         default: "2023.08.x"
         type: string
-      git-address:
-        description: 'git-address'
-        required: true
-        default: 'https://github.com/buildroot/buildroot.git'        
 jobs:
   buildroot:
     runs-on: ubuntu-latest
@@ -26,11 +22,6 @@ jobs:
         uses: actions/checkout@main
         with:
           lfs: 'true'
-
-      - name: Clone source code
-        run: |
-          git clone ${{github.event.inputs.git-address}} /opt/buildroot
-          cd /opt/buildroot
 
       - name: Install packages
         run: |
@@ -46,8 +37,11 @@ jobs:
           
           df -h
 
-      - name: Bring over config files from redpill-load
+      - name: Bring over tcrpfriend and config files from redpill-load
         run: |
+          mkdir /home/runner/work/tcrpfriend
+          cd /home/runner/work/tcrpfriend
+          git clone https://github.com/PeterSuh-Q3/tcrpfriend.git
           mkdir /opt/config-files
           cd /opt/config-files
           git clone https://github.com/PeterSuh-Q3/redpill-load.git
@@ -55,15 +49,13 @@ jobs:
           
       - name: Build Buildroot
         run: |
-          git clone https://oauth2:${{ secrets.ACTION }}@github.com/AuxXxilium/arc-build.git
-          
           BR_VERSION="${{ inputs.version }}"
 
-          git clone --single-branch -b ${BR_VERSION} https://github.com/buildroot/buildroot.git .buildroot
+          cp -rf /home/runner/work/tcrpfriend/tcrpfriend/buildroot/* .
+          cp -rf /opt/config-files/redpill-load/config /home/runner/work/tcrpfriend/tcrpfriend/buildroot/board/tcrpfriend/rootfs-overlay/root/
 
-          cp -Ru arc-build/arc/* .buildroot/
-
-          cd .buildroot/
+          git clone --single-branch -b ${BR_VERSION} https://github.com/buildroot/buildroot.git /opt/buildroot
+          cd /opt/buildroot
 
           echo "Generating default Config"
           make BR2_EXTERNAL=./external -j$(nproc) arc_defconfig
