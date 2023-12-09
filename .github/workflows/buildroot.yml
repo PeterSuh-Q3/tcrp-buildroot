@@ -17,6 +17,11 @@ on:
         description: 'board'
         required: true
         default: 'tcrpfriend'
+      kver:  
+        description: 'kver'
+        required: true
+        default: '6.4.16'
+        
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -76,10 +81,10 @@ jobs:
           mkdir /opt/firmware
           cp -r /opt/buildroot/output/images /opt/firmware               
           
-      - name: Upload buildroot-${{ env.BUILDROOT_VERSION }}-${{ env.KERNEL_VERSION }}
+      - name: Upload buildroot
         uses: actions/upload-artifact@v3
         with:
-          name: buildroot-${{ env.BUILDROOT_VERSION }}-${{ env.KERNEL_VERSION }}
+          name: buildroot-${{ env.BUILDROOT_VERSION }}-${ inputs.kver }
           path: /opt/firmware
 
       # Publish a release if is a tag
