@@ -85,7 +85,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: buildroot-${{ env.BUILDROOT_VERSION }}-${ inputs.kver }
-          path: /opt/firmware
+          path: |
+            /opt/firmware
+            /opt/buildroot/output/images/bzImage
+            /opt/buildroot/output/images/rootfs.cpio.xz          
 
       # Publish a release if is a tag
       - name: Release
@@ -93,8 +96,8 @@ jobs:
         with:
           tag_name: ${{ inputs.branches-tags }}
           files: |
-            .buildroot/output/images/bzImage
-            .buildroot/output/images/rootfs.cpio.xz
+            /opt/buildroot/output/images/bzImage
+            /opt/buildroot/output/images/rootfs.cpio.xz
           body: |
             Buildroot Version: ${{ env.BUILDROOT_VERSION }}
             Kernel Version: ${{ env.KERNEL_VERSION }}
