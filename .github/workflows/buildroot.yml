@@ -9,10 +9,6 @@ on:
       
   workflow_dispatch:
     inputs:
-      git-address:
-        description: 'git-address'
-        required: true
-        default: 'https://github.com/buildroot/buildroot.git'
       branches-tags:
         description: 'branches-tags'
         required: true
@@ -26,10 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Clone source code
-        run: |
-          git clone ${{github.event.inputs.git-address}} /opt/buildroot
-          cd /opt/buildroot
       - name: Install packages
         run: |
           # Clean up disk space
@@ -56,10 +48,10 @@ jobs:
           
       - name: Build Buildroot
         run: |
+          BR_VERSION="${{ inputs.branches-tags }}"
+
+          git clone --single-branch -b ${BR_VERSION} https://github.com/buildroot/buildroot.git /opt/buildroot
           cd /opt/buildroot
-          
-          git checkout ${{github.event.inputs.branches-tags}}
-          git pull origin ${{github.event.inputs.branches-tags}}
           
           cp -rf /home/runner/work/tcrpfriend/tcrpfriend/buildroot/* .
           cp -rf /opt/config-files/redpill-load/config /home/runner/work/tcrpfriend/tcrpfriend/buildroot/board/tcrpfriend/rootfs-overlay/root/
