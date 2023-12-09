@@ -84,7 +84,7 @@ jobs:
       - name: Upload buildroot
         uses: actions/upload-artifact@v3
         with:
-          name: buildroot-${{ env.BUILDROOT_VERSION }}-${ inputs.kver }
+          name: buildroot-${{ env.BUILDROOT_VERSION }}-${{ inputs.kver }}
           path: |
             /opt/firmware
             /opt/buildroot/output/images/bzImage
