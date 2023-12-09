@@ -68,8 +68,8 @@ jobs:
           echo "Version: ${VERSION}"
           
           echo '---start make---'
-          make ${{github.event.inputs.board}}_defconfig
-          make
+          #make ${{github.event.inputs.board}}_defconfig
+          #make
 
           echo "BUILDROOT_VERSION=${{ inputs.branches-tags }}" >> $GITHUB_ENV          
 
