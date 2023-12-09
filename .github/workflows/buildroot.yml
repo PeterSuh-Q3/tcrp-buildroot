@@ -44,8 +44,11 @@ jobs:
           
           df -h
           
-      - name: Bring over config files from redpill-load
+      - name: Bring over tcrpfriend and config files from redpill-load
         run: |
+          mkdir /home/runner/work/tcrpfriend
+          cd /home/runner/work/tcrpfriend
+          git clone https://github.com/PeterSuh-Q3/tcrpfriend.git
           mkdir /opt/config-files
           cd /opt/config-files
           git clone https://github.com/PeterSuh-Q3/redpill-load.git
