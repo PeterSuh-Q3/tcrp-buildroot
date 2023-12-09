@@ -1,0 +1,110 @@
+#
+# Copyright (C) 2023 TCRP-mshell <https://github.com/PeterSuh-Q3> and Ing <https://github.com/wjz304>
+#
+# This is free software, licensed under the MIT License.
+# See /LICENSE for more information.
+#
+
+name: Buildroot Mshell
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "version"
+        default: "2023.08.x"
+        type: string
+      git-address:
+        description: 'git-address'
+        required: true
+        default: 'https://github.com/buildroot/buildroot.git'        
+jobs:
+  buildroot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          lfs: 'true'
+
+      - name: Clone source code
+        run: |
+          git clone ${{github.event.inputs.git-address}} /opt/buildroot
+          cd /opt/buildroot
+
+      - name: Install packages
+        run: |
+          # Clean up disk space
+          docker rmi $(docker images -q)
+          sudo apt update
+          sudo apt -y purge azure-cli* docker* llvm* google* dotnet* powershell* sphinxsearch* mysql* php* 
+          sudo apt -y full-upgrade
+
+          sudo apt update
+          sudo apt install -y jq gawk cpio gettext libelf-dev qemu-utils 
+          sudo snap install yq
+          
+          df -h
+
+      - name: Bring over config files from redpill-load
+        run: |
+          mkdir /opt/config-files
+          cd /opt/config-files
+          git clone https://github.com/PeterSuh-Q3/redpill-load.git
+          ls -ltr /opt/config-files/redpill-load/config 
+          
+      - name: Build Buildroot
+        run: |
+          git clone https://oauth2:${{ secrets.ACTION }}@github.com/AuxXxilium/arc-build.git
+          
+          BR_VERSION="${{ inputs.version }}"
+
+          git clone --single-branch -b ${BR_VERSION} https://github.com/buildroot/buildroot.git .buildroot
+
+          cp -Ru arc-build/arc/* .buildroot/
+
+          cd .buildroot/
+
+          echo "Generating default Config"
+          make BR2_EXTERNAL=./external -j$(nproc) arc_defconfig
+          
+          echo "Download Sources if not cached"
+          make BR2_EXTERNAL=./external -j$(nproc) source
+          
+          echo "Prepare Buildroot for first Make"
+          make BR2_EXTERNAL=./external -j$(nproc)
+
+          [ ! -f "output/images/bzImage" ] && exit 1
+          [ ! -f "output/images/rootfs.cpio.xz" ] && exit 1
+          
+          BUILDROOT_VERSION="$(grep ' BR2_VERSION :=' Makefile | cut -d '=' -f2 | tr -d ' ')"
+          KERNEL_VERSION="$(grep BR2_LINUX_KERNEL_VERSION .config | cut -d'=' -f2 | tr -d '"')"
+          echo "BUILDROOT_VERSION=${BUILDROOT_VERSION}" >> $GITHUB_ENV
+          echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
+
+      - name: copy firmware
+        run: |      
+          mkdir /opt/firmware
+          cd /opt/buildroot
+          cp -r /opt/buildroot/output/images /opt/firmware          
+
+      - name: Upload Artifact
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: grub
+          path: |
+            .buildroot/output/images/bzImage
+            .buildroot/output/images/rootfs.cpio.xz
+
+      # Publish a release if is a tag
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.version }}
+          files: |
+            .buildroot/output/images/bzImage
+            .buildroot/output/images/rootfs.cpio.xz
+          body: |
+            Buildroot Version: ${{ env.BUILDROOT_VERSION }}
+            Kernel Version: ${{ env.KERNEL_VERSION }}
