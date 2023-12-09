@@ -81,10 +81,10 @@ jobs:
           mkdir /opt/firmware
           cp -r /opt/buildroot/output/images /opt/firmware               
           
-      - name: Upload buildroot-${{github.event.inputs.branches-tags}}-${{github.event.inputs.board}}
+      - name: Upload buildroot-${{ env.BUILDROOT_VERSION }}-${{ env.KERNEL_VERSION }}
         uses: actions/upload-artifact@v3
         with:
-          name: buildroot-${{github.event.inputs.branches-tags}}-${{github.event.inputs.board}}
+          name: buildroot-${{ env.BUILDROOT_VERSION }}-${{ env.KERNEL_VERSION }}
           path: /opt/firmware
 
       # Publish a release if is a tag
