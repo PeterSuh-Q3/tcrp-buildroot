@@ -12,7 +12,7 @@ on:
       branches-tags:
         description: 'branches-tags'
         required: true
-        default: '2023.08.x'
+        default: '2023.11'
       board:
         description: 'board'
         required: true
@@ -20,7 +20,7 @@ on:
       kver:  
         description: 'kver'
         required: true
-        default: '6.4.16'
+        default: '6.6.3'
         
 jobs:
   build:
@@ -29,12 +29,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install packages
         run: |
-          # Clean up disk space
-          docker rmi $(docker images -q)
-          sudo apt update
-          sudo apt -y purge azure-cli* docker* llvm* google* dotnet* powershell* sphinxsearch* mysql* php* 
-          sudo apt -y full-upgrade
-
           sudo apt update
           sudo apt install -y jq gawk cpio gettext libelf-dev qemu-utils 
           sudo snap install yq
@@ -72,10 +66,6 @@ jobs:
           make
 
           echo "BUILDROOT_VERSION=${{ inputs.branches-tags }}" >> $GITHUB_ENV          
-
-          KERNEL_VERSION="$(grep BR2_LINUX_KERNEL_VERSION ${{github.event.inputs.board}}_defconfig | cut -d'=' -f2 | tr -d '"')"
-          echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
-
       - name: copy firmware
         run: |      
           mkdir /opt/firmware
@@ -84,11 +74,11 @@ jobs:
       - name: Upload buildroot
         uses: actions/upload-artifact@v3
         with:
-          name: buildroot-${{ env.BUILDROOT_VERSION }}-${{ inputs.kver }}
+          name: buildroot-${{ env.BUILDROOT_VERSION }}
           path: |
             /opt/firmware
             /opt/buildroot/output/images/bzImage
-            /opt/buildroot/output/images/rootfs.cpio.xz          
+            /opt/buildroot/output/images/rootfs.cpio.xz
 
       # Publish a release if is a tag
       - name: Release
@@ -100,4 +90,3 @@ jobs:
             /opt/buildroot/output/images/rootfs.cpio.xz
           body: |
             Buildroot Version: ${{ env.BUILDROOT_VERSION }}
-            #Kernel Version: ${{ env.KERNEL_VERSION }}
