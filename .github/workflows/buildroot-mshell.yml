@@ -58,7 +58,7 @@ jobs:
           cd /opt/buildroot
 
           echo "Generating default Config"
-          make BR2_EXTERNAL=./external -j$(nproc) arc_defconfig
+          make BR2_EXTERNAL=./external -j$(nproc) tcrpfriend_defconfig
           
           echo "Download Sources if not cached"
           make BR2_EXTERNAL=./external -j$(nproc) source
@@ -73,30 +73,17 @@ jobs:
           KERNEL_VERSION="$(grep BR2_LINUX_KERNEL_VERSION .config | cut -d'=' -f2 | tr -d '"')"
           echo "BUILDROOT_VERSION=${BUILDROOT_VERSION}" >> $GITHUB_ENV
           echo "KERNEL_VERSION=${KERNEL_VERSION}" >> $GITHUB_ENV
-
+          
       - name: copy firmware
         run: |      
           mkdir /opt/firmware
           cd /opt/buildroot
-          cp -r /opt/buildroot/output/images /opt/firmware          
+          cp -vf /opt/buildroot/output/images/bzImage /opt/firmware/bzImage-friend || exit 1
+          cp -vf /opt/buildroot/output/images/rootfs.cpio.xz /opt/firmware/initrd-friend || exit 1
 
       - name: Upload Artifact
         if: success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: grub
-          path: |
-            .buildroot/output/images/bzImage
-            .buildroot/output/images/rootfs.cpio.xz
-
-      # Publish a release if is a tag
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ inputs.version }}
-          files: |
-            .buildroot/output/images/bzImage
-            .buildroot/output/images/rootfs.cpio.xz
-          body: |
-            Buildroot Version: ${{ env.BUILDROOT_VERSION }}
-            Kernel Version: ${{ env.KERNEL_VERSION }}
+          name: buildroot
+          path: /opt/firmware
