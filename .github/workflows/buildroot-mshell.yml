@@ -48,6 +48,11 @@ jobs:
           cd /opt/config-files
           git clone https://github.com/PeterSuh-Q3/redpill-load.git
           ls -ltr /opt/config-files/redpill-load/config 
+
+      - name: Create external directory and copy necessary files
+        run: |
+          mkdir -p /opt/buildroot/external
+          cp -r /home/runner/work/tcrpfriend/tcrpfriend/buildroot/external/* /opt/buildroot/external/
           
       - name: Build Buildroot
         run: |
