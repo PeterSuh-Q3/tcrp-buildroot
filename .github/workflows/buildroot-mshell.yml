@@ -52,7 +52,7 @@ jobs:
       - name: Create external directory and copy necessary files
         run: |
           mkdir -p /opt/buildroot/external
-          cp -r /home/runner/work/tcrpfriend/tcrpfriend/buildroot/external/* /opt/buildroot/external/
+          cp -r /home/runner/work/tcrpfriend/tcrpfriend/buildroot/configs/* /opt/buildroot/external/
           
       - name: Build Buildroot
         run: |
