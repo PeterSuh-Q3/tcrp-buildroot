@@ -26,7 +26,9 @@ jobs:
       - name: Install packages
         run: |
           # Clean up disk space
-          docker rmi $(docker images -q)
+          if [ "$(docker images -q)" ]; then
+            docker rmi $(docker images -q)
+          fi        
           sudo apt update
           sudo apt -y purge azure-cli* docker* llvm* google* dotnet* powershell* sphinxsearch* mysql* php* 
           sudo apt -y full-upgrade
